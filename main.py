@@ -3,56 +3,43 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
-
-import numpy as np
 import pandas as pd
 
-input ="asus 1650 ekran kartı"
+input = input("Item Name : ")
 
 driver = webdriver.Chrome()
 driver.maximize_window()
 
 
 
+#--n11--
+driver.get("https://www.n11.com/")
+WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.ID,"searchData")))
+search_bar_n11 = driver.find_element(By.ID,"searchData")
+search_bar_n11.send_keys(input)
 
-"""
-#--Amazon-- Sorunlu geri dön
-driver.get("https://www.amazon.com.tr/")
-WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.CLASS_NAME,"nav-input")))
-search_bar_amazon = driver.find_element(By.CLASS_NAME,"nav-input")
-search_bar_amazon.send_keys(input)
+WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.CLASS_NAME,"iconsSearch")))
+search_button_n11 = driver.find_element(By.CLASS_NAME,"iconsSearch")
+search_button_n11.click()
 
-WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.ID,"nav-search-submit-button")))
-search_button_amazon = driver.find_element(By.ID,"nav-search-submit-button")
-search_button_amazon.click()
+WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.CLASS_NAME, "productName")))
+item_name_n11 = driver.find_elements(By.CLASS_NAME, "productName")
 
-WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.CLASS_NAME, "a-size-base-plus")))
-item_name_amazon = driver.find_elements(By.CLASS_NAME, "a-size-base-plus")
+WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.CLASS_NAME, "newPrice")))
+item_price_n11 = driver.find_elements(By.CLASS_NAME, "newPrice")
 
-WebDriverWait(driver, 4).until(expected_conditions.visibility_of_element_located((By.CLASS_NAME, "a-size-base-plus")))
-item_price_amazon = driver.find_elements(By.CLASS_NAME, "a-price-whole")
+n11_name_list = []
+n11_price_list = []
 
-amazon_name_list = []
-amazon_price_list = []
+for n11_name in item_name_n11:
+    n11_name_list.append(n11_name.text)
 
-for amazon_name in item_name_amazon:
-    amazon_name_list.append(amazon_name.text)
+for n11_price in item_price_n11:
+    price_n11 = n11_price.text.replace("TL", "").replace(".","").replace(",",".")
+    n11_price_list.append(float(price_n11))
 
-for amazon_price in item_price_amazon:
-    amazon_price_list.append(amazon_price.text)
+df = pd.DataFrame({'website':"n11",'Item Name':n11_name_list,'Item Price': n11_price_list })
 
-print(amazon_name_list)
-print(amazon_price_list)
-print(len(amazon_price_list))
-print(len(amazon_name_list))
-
-df_amazon = pd.DataFrame({'website':"Amazon",'Item Name':amazon_name_list,'Item Price': amazon_price_list })
-
-print(df_amazon)
-
-"""
-
-"""
 
 #--ÇicekSepeti--
 driver.get("https://www.ciceksepeti.com/")
@@ -82,21 +69,12 @@ for ciceksepeti_name in item_name_ciceksepeti:
     ciceksepeti_name_list.append(ciceksepeti_name.text)
 
 for ciceksepeti_price in item_price_ciceksepeti:
-    price = ciceksepeti_price.text.replace("\n","")
-    ciceksepeti_price_list.append(price)
-
-print(ciceksepeti_name_list)
-print(ciceksepeti_price_list)
-print(len(ciceksepeti_name_list))
-print(len(ciceksepeti_price_list))
+    price_ciceksepeti = ciceksepeti_price.text.replace("\n","").replace("TL", "").replace(".", "").replace(",", ".")
+    ciceksepeti_price_list.append(float(price_ciceksepeti))
 
 df_ciceksepeti = pd.DataFrame({'website':"ÇiçekSepeti",'Item Name':ciceksepeti_name_list,'Item Price': ciceksepeti_price_list })
 
-print(df_ciceksepeti)
-
-
-
-
+df = df._append(df_ciceksepeti, ignore_index=True)
 
 #--Trendyol--
 driver.get("https://www.trendyol.com/butik/liste/1/kadin")
@@ -121,17 +99,12 @@ for trenyol_name in item_name_trendyol:
     trenyol_name_list.append(trenyol_name.text)
 
 for trenyol_price in item_price_trendyol:
-    trenyol_price_list.append(trenyol_price.text)
+    price_trenyol = trenyol_price.text.replace("\n", "").replace("TL", "").replace(".", "").replace(",", ".")
+    trenyol_price_list.append(float(price_trenyol))
 
-print(trenyol_price_list)
-print(trenyol_name_list)
+df_trendyol = pd.DataFrame({'website':"Trendyol",'Item Name':trenyol_name_list,'Item Price': trenyol_price_list })
 
-df_trendyol = pd.DataFrame({'website':"Tredyol",'Item Name':trenyol_name_list,'Item Price': trenyol_price_list })
-
-print(df_trendyol)
-
-
-
+df = df._append(df_trendyol, ignore_index=True)
 
 #--HEPSİBURADA--
 
@@ -159,17 +132,21 @@ items_price = driver.find_elements(By.CSS_SELECTOR, "div[data-test-id='price-cur
 
 hepsi_name_list = []
 hepsi_price_list = []
+
 for item_name in items_name:
     hepsi_name_list.append(item_name.text)
 
 for item_price in items_price:
-    hepsi_price_list.append(item_price.text)
+    price_hepsi = item_price.text.replace("\n", "").replace("TL", "").replace(".", "").replace(",", ".")
+    hepsi_price_list.append(float(price_hepsi))
 
-df_test = pd.DataFrame({'website':"hepsiburada",'Item Name':hepsi_name_list,'Item Price': hepsi_price_list })
+df_hepsiburada = pd.DataFrame({'website':"hepsiburada",'Item Name':hepsi_name_list,'Item Price': hepsi_price_list })
 
-print(df_test)
-"""
+df = df._append(df_hepsiburada, ignore_index=True)
 
 
-while True:
-    continue
+print(df.sort_values("Item Price"))
+
+
+time.sleep(2)
+driver.close()
